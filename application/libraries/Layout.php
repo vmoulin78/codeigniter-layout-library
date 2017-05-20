@@ -576,7 +576,7 @@ class Layout
      * @return $this
      */
     public function add_basic_css($tags = null) {
-        if (($tags !== null)
+        if (( ! is_null($tags))
             && ( ! is_array($tags))
         ) {
             $tags = array($tags);
@@ -606,7 +606,7 @@ class Layout
      * @return $this
      */
     public function add_basic_js($tags = null) {
-        if (($tags !== null)
+        if (( ! is_null($tags))
             && ( ! is_array($tags))
         ) {
             $tags = array($tags);
