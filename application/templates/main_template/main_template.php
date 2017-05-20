@@ -1,0 +1,1 @@
+<?php $CI->layout->extend_template('common_template'); ?>

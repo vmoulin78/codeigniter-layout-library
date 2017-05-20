@@ -1,0 +1,1 @@
+<p>The index page</p>
