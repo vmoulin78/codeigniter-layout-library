@@ -92,7 +92,6 @@ Note: The basic assets are defined in the variables $config['layout_basic_css'] 
 
 Example:
 
-    ```text
     $config['layout_basic_css'] = array(
         'css/app.css',
         array(
@@ -115,7 +114,6 @@ Example:
             ),
         ),
     );
-    ```
 
 ### The triggers
 * **trigger_title()** : Trigger the insertion of the title of the page
