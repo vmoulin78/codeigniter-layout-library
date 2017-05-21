@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
-* **Version** : 2.0.0
+* **Version** : 2.1.0
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php
@@ -84,9 +84,10 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 * **add_js()** : Add a javascript asset to the layout
 * **add_basic_css()** : Add the basic css assets according to the given tags or all the basic css assets
 * **add_basic_js()** : Add the basic javascript assets according to the given tags or all the basic javascript assets
+* **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets
 * **add_basic_css_except()** : Add the basic css assets except those that have a tag in common with the given tags
 * **add_basic_js_except()** : Add the basic javascript assets except those that have a tag in common with the given tags
-* **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets
+* **add_basic_assets_except()** : Add the basic css and javascript assets except those that have a tag in common with the given tags
 
 Note: The basic assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file config_layout.php
 
@@ -122,10 +123,10 @@ Example:
 * **trigger_http_equiv()** : Trigger the insertion of all the "http-equiv" metadata
 * **trigger_breadcrumb()** : Trigger the insertion of the breadcrumb
 * **trigger_content_section()** : Trigger the insertion of a content section
-* **trigger_css()** : Trigger the insertion of the css assets that have not already been 'triggered' and have a tag in common with the given tags  
-Note: If this method is called without arguments, all the css assets that have not already been 'triggered' are inserted.
-* **trigger_js()** : Trigger the insertion of the javascript assets that have not already been 'triggered' and have a tag in common with the given tags  
-Note: If this method is called without arguments, all the javascript assets that have not already been 'triggered' are inserted.
+* **trigger_css()** : Trigger the insertion of the css assets according to the given tags or all the css assets
+* **trigger_js()** : Trigger the insertion of the javascript assets according to the given tags or all the javascript assets
+* **trigger_css_except()** : Trigger the insertion of the css assets except those that have a tag in common with the given tags
+* **trigger_js_except()** : Trigger the insertion of the javascript assets except those that have a tag in common with the given tags
 
 ### The "template" section
 * **extend_template()** : Extend a template

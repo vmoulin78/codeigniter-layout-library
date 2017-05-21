@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     2.0.0
+ * @version     2.1.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -330,66 +330,6 @@ class Layout
     }
 
     /**
-     * Return true if there are no duplicate added css assets and false otherwise
-     *
-     * @access private
-     * @return true if there are no duplicate added css assets and false otherwise
-     */
-    private function check_css_unicity() {
-        if (count(array_unique(array_column($this->css, 'absolute_href'))) == count($this->css)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Return true if there are no duplicate added javascript assets and false otherwise
-     *
-     * @access private
-     * @return true if there are no duplicate added javascript assets and false otherwise
-     */
-    private function check_js_unicity() {
-        if (count(array_unique(array_column($this->js, 'absolute_href'))) == count($this->js)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Return true if there are some untriggered css assets remaining and false otherwise
-     *
-     * @access private
-     * @return true if there are some untriggered css assets remaining and false otherwise
-     */
-    private function untriggered_css_remaining() {
-        foreach ($this->css as $css) {
-            if ( ! $css['triggered']) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Return true if there are some untriggered javascript assets remaining and false otherwise
-     *
-     * @access private
-     * @return true if there are some untriggered javascript assets remaining and false otherwise
-     */
-    private function untriggered_js_remaining() {
-        foreach ($this->js as $js) {
-            if ( ! $js['triggered']) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Add the css asset $css to the layout
      *
      * If $css is a string, it is considered as a 'local' css asset with no additional attributes and no tags.
@@ -437,13 +377,13 @@ class Layout
             show_error('Layout error: Incorrect href for css file');
         }
 
-        if ( ! isset($css['location'])) {
-            $location = 'local';
-        } else {
+        if (isset($css['location'])) {
             $location = $css['location'];
             if ( ! in_array($location, array('local', 'remote'))) {
                 show_error('Layout error: Incorrect location for css file');
             }
+        } else {
+            $location = 'local';
         }
 
         if (isset($css['attributes'])) {
@@ -452,13 +392,13 @@ class Layout
             $attributes = array();
         }
 
-        if ( ! isset($css['tags'])) {
-            $tags = array();
-        } else {
+        if (isset($css['tags'])) {
             $tags = $css['tags'];
             if ( ! empty(array_diff($tags, $this->CI->config->item('layout_css_tags')))) {
                 show_error('Layout error: Unknown tag for css file');
             }
+        } else {
+            $tags = array();
         }
 
         if (($location === 'local')
@@ -471,7 +411,6 @@ class Layout
             'absolute_href'  => $this->asset_absolute_href($href, $location),
             'attributes'     => $attributes,
             'tags'           => $tags,
-            'triggered'      => false,
         );
 
         return true;
@@ -525,13 +464,13 @@ class Layout
             show_error('Layout error: Incorrect href for javascript file');
         }
 
-        if ( ! isset($js['location'])) {
-            $location = 'local';
-        } else {
+        if (isset($js['location'])) {
             $location = $js['location'];
             if ( ! in_array($location, array('local', 'remote'))) {
                 show_error('Layout error: Incorrect location for javascript file');
             }
+        } else {
+            $location = 'local';
         }
 
         if (isset($js['attributes'])) {
@@ -540,13 +479,13 @@ class Layout
             $attributes = array();
         }
 
-        if ( ! isset($js['tags'])) {
-            $tags = array();
-        } else {
+        if (isset($js['tags'])) {
             $tags = $js['tags'];
             if ( ! empty(array_diff($tags, $this->CI->config->item('layout_js_tags')))) {
                 show_error('Layout error: Unknown tag for javascript file');
             }
+        } else {
+            $tags = array();
         }
 
         if (($location === 'local')
@@ -559,7 +498,6 @@ class Layout
             'absolute_href'  => $this->asset_absolute_href($href, $location),
             'attributes'     => $attributes,
             'tags'           => $tags,
-            'triggered'      => false,
         );
 
         return true;
@@ -626,6 +564,23 @@ class Layout
     }
 
     /**
+     * Add the basic css and javascript assets that have a tag in common with the list $tags
+     * If $tags is null, all the basic css and javascript assets are added.
+     * You may call this method with a single tag instead of an array.
+     * These assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file ./config/config_layout.php
+     *
+     * @access public
+     * @param $tags
+     * @return $this
+     */
+    public function add_basic_assets($tags = null) {
+        $this->add_basic_css($tags);
+        $this->add_basic_js($tags);
+        
+        return $this;
+    }
+
+    /**
      * Add the basic css assets except those that have a tag in common with the list $tags
      * You may call this method with a single tag instead of an array.
      * These assets are defined in the variable $config['layout_basic_css'] of the configuration file ./config/config_layout.php
@@ -680,8 +635,7 @@ class Layout
     }
 
     /**
-     * Add the basic css and javascript assets that have a tag in common with the list $tags
-     * If $tags is null, all the basic css and javascript assets are added.
+     * Add the basic css and javascript assets except those that have a tag in common with the list $tags
      * You may call this method with a single tag instead of an array.
      * These assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file ./config/config_layout.php
      *
@@ -689,9 +643,9 @@ class Layout
      * @param $tags
      * @return $this
      */
-    public function add_basic_assets($tags = null) {
-        $this->add_basic_css($tags);
-        $this->add_basic_js($tags);
+    public function add_basic_assets_except($tags) {
+        $this->add_basic_css_except($tags);
+        $this->add_basic_js_except($tags);
         
         return $this;
     }
@@ -703,6 +657,36 @@ class Layout
     | The triggers
     |-------------------------------------------------------------------------------
     */
+
+    /**
+     * Insert the css asset $css
+     *
+     * @access private
+     * @param $css
+     * @return void
+     */
+    private function insert_css($css) {
+        echo '<link rel="stylesheet" type="text/css" href="' . $css['absolute_href'] . '"';
+        foreach ($css['attributes'] as $attribute_name => $attribute_value) {
+            echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+        }
+        echo ' />';
+    }
+
+    /**
+     * Insert the javascript asset $js
+     *
+     * @access private
+     * @param $js
+     * @return void
+     */
+    private function insert_js($js) {
+        echo '<script type="text/javascript" src="' . $js['absolute_href'] . '"';
+        foreach ($js['attributes'] as $attribute_name => $attribute_value) {
+            echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+        }
+        echo '></script>';
+    }
 
     /**
      * Trigger the insertion of the title of the page
@@ -770,10 +754,9 @@ class Layout
     }
 
     /**
-     * Trigger the insertion of the css assets that have not already been 'triggered' and have a tag in common with the list $tags
-     * If $tags is null, then all the css assets that have not already been 'triggered' are inserted.
+     * Trigger the insertion of the css assets that have a tag in common with the list $tags
+     * If $tags is null, then all the css assets are inserted.
      * You may call this method with a single tag instead of an array.
-     * All the inserted css assets are marked as 'triggered' so that they may not be inserted again.
      *
      * @access public
      * @param $tags
@@ -786,26 +769,19 @@ class Layout
             $tags = array($tags);
         }
 
-        foreach ($this->css as &$css) {
-            if (( ! $css['triggered'])
-                && (is_null($tags) || ( ! empty(array_intersect($css['tags'], $tags))))
+        foreach ($this->css as $css) {
+            if (is_null($tags)
+                || ( ! empty(array_intersect($css['tags'], $tags)))
             ) {
-                echo '<link rel="stylesheet" type="text/css" href="' . $css['absolute_href'] . '"';
-                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
-                echo ' />';
-
-                $css['triggered'] = true;
+                $this->insert_css($css);
             }
         }
     }
 
     /**
-     * Trigger the insertion of the javascript assets that have not already been 'triggered' and have a tag in common with the list $tags
-     * If $tags is null, then all the javascript assets that have not already been 'triggered' are inserted.
+     * Trigger the insertion of the javascript assets that have a tag in common with the list $tags
+     * If $tags is null, then all the javascript assets are inserted.
      * You may call this method with a single tag instead of an array.
-     * All the inserted javascript assets are marked as 'triggered' so that they may not be inserted again.
      *
      * @access public
      * @param $tags
@@ -818,17 +794,51 @@ class Layout
             $tags = array($tags);
         }
 
-        foreach ($this->js as &$js) {
-            if (( ! $js['triggered'])
-                && (is_null($tags) || ( ! empty(array_intersect($js['tags'], $tags))))
+        foreach ($this->js as $js) {
+            if (is_null($tags)
+                || ( ! empty(array_intersect($js['tags'], $tags)))
             ) {
-                echo '<script type="text/javascript" src="' . $js['absolute_href'] . '"';
-                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
-                echo '></script>';
+                $this->insert_js($js);
+            }
+        }
+    }
 
-                $js['triggered'] = true;
+    /**
+     * Trigger the insertion of the css assets except those that have a tag in common with the list $tags
+     * You may call this method with a single tag instead of an array.
+     *
+     * @access public
+     * @param $tags
+     * @return void
+     */
+    public function trigger_css_except($tags) {
+        if ( ! is_array($tags)) {
+            $tags = array($tags);
+        }
+
+        foreach ($this->css as $css) {
+            if (empty(array_intersect($css['tags'], $tags))) {
+                $this->insert_css($css);
+            }
+        }
+    }
+
+    /**
+     * Trigger the insertion of the javascript assets except those that have a tag in common with the list $tags
+     * You may call this method with a single tag instead of an array.
+     *
+     * @access public
+     * @param $tags
+     * @return void
+     */
+    public function trigger_js_except($tags) {
+        if ( ! is_array($tags)) {
+            $tags = array($tags);
+        }
+
+        foreach ($this->js as $js) {
+            if (empty(array_intersect($js['tags'], $tags))) {
+                $this->insert_js($js);
             }
         }
     }
@@ -1079,23 +1089,9 @@ class Layout
 
         $this->load_view($view, $data, 'main', $autoloaded_assets);
 
-        if ( ! $this->check_css_unicity()) {
-            show_error('Layout error: The added css assets are not unique.');
-        }
-        if ( ! $this->check_js_unicity()) {
-            show_error('Layout error: The added javascript assets are not unique.');
-        }
-
         $this->push_templates_chain($this->template);
 
         $output = $this->CI->load->view('../templates/' . $this->get_current_root_template(), array('CI' => $this->CI), true);
-
-        if ($this->untriggered_css_remaining()) {
-            show_error('Layout error: At least one css asset has been added but not triggered.');
-        }
-        if ($this->untriggered_js_remaining()) {
-            show_error('Layout error: At least one javascript asset has been added but not triggered.');
-        }
 
         echo $output;
     }
