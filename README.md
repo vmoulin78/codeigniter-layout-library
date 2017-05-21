@@ -86,8 +86,10 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 * **add_basic_js()** : Add the basic javascript assets according to the given tags or all the basic javascript assets
 * **add_basic_css_except()** : Add the basic css assets except those that have a tag in common with the given tags
 * **add_basic_js_except()** : Add the basic javascript assets except those that have a tag in common with the given tags
-* **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets  
-Note: The basic assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file config_layout.php  
+* **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets
+
+Note: The basic assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file config_layout.php
+
 Example:
 
     ```text
@@ -146,5 +148,5 @@ Note: This is the method that you will use if the name of the action does not ma
 * **load_view()** : Load a view output in a content section  
 Example:
    * in the controller: `$this->layout->load_view('widget_view', $data_for_widget_view, 'widget_section');`
-   * in the template, you put `<?php echo $content['widget_section']; ?>` where you want to insert the loaded view "widget_view".
+   * in the template, you put `<?php $CI->layout->trigger_content_section('widget_section'); ?>` where you want to insert the loaded view "widget_view".
 * **return_view()** : Return a view output
