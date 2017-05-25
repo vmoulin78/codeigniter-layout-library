@@ -136,7 +136,7 @@ Example:
 Note:
 * A root template (i.e. a template that does not extend another template) is a **file** in the templates folder.
 * A template that extends another template is a **folder** in the templates folder.  
-This folder must contain a file with the same name plus the extension.  
+This folder must contain a file with the same name followed by the `.php` extension.  
 This file contains only one line: `<?php $CI->layout->extend_template('parent_template'); ?>`.
 
 ### The "view" section
