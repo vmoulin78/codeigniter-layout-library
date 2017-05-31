@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     2.1.0
+ * @version     3.0.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,11 +50,12 @@ class Layout
      */
     public function __construct() {
         $this->CI =& get_instance();
-        
-        $this->template  = $this->CI->config->item('layout_default_template');
-        $this->title     = $this->CI->config->item('layout_default_title');
-        $this->charset   = $this->CI->config->item('layout_default_charset');
+
         $this->content   = array('main' => '');
+        
+        $this->set_template($this->CI->config->item('layout_default_template'));
+        $this->set_title($this->CI->config->item('layout_default_title'));
+        $this->set_charset($this->CI->config->item('layout_default_charset'));
     }
     
     /******************************************************************************/
@@ -861,25 +862,7 @@ class Layout
     private function is_template($template) {
         if (is_string($template)
             && ( ! empty($template))
-            && (file_exists(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template) || file_exists(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . '.php'))
-        ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Check if the template $template is a root template
-     *
-     * @access private
-     * @param $template
-     * @return true if the template $template is a root template and false otherwise
-     */
-    private function is_root_template($template) {
-        if (is_string($template)
-            && ( ! empty($template))
-            && (file_exists(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . '.php'))
+            && (file_exists(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $template . '.yml'))
         ) {
             return true;
         } else {
@@ -901,23 +884,38 @@ class Layout
     }
 
     /**
-     * Get the current root template
-     *
-     * @access private
-     * @return The current root template
-     */
-    private function get_current_root_template() {
-        return end($this->templates_chains_stack[count($this->templates_chains_stack) - 1]);
-    }
-
-    /**
      * Get the current templates chain
      *
      * @access private
      * @return The current templates chain
      */
     private function get_current_templates_chain() {
-        return end($this->templates_chains_stack);
+        if (count($this->templates_chains_stack) == 0) {
+            return false;
+        }
+
+        $retour = array_slice($this->templates_chains_stack, -1);
+        $retour = array_pop($retour);
+
+        return $retour;
+    }
+
+    /**
+     * Get the current root template
+     *
+     * @access private
+     * @return The current root template
+     */
+    private function get_current_root_template() {
+        $current_templates_chain = $this->get_current_templates_chain();
+
+        if (($current_templates_chain === false)
+            || (count($current_templates_chain) == 0)
+        ) {
+            return false;
+        }
+
+        return array_pop($current_templates_chain);
     }
 
     /**
@@ -928,12 +926,13 @@ class Layout
      * @return void
      */
     private function push_templates_chain_item($template) {
-        $CI = $this->CI;
+        $templates_chain = array_pop($this->templates_chains_stack);
+        array_push($templates_chain, $template);
+        array_push($this->templates_chains_stack, $templates_chain);
 
-        array_push($this->templates_chains_stack[count($this->templates_chains_stack) - 1], $template);
-
-        if ( ! $this->is_root_template($template)) {
-            include(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $template . '.php');
+        $template_config = yaml_parse_file(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $template . '.yml');
+        if ( ! is_null($template_config['parent_template'])) {
+            $this->push_templates_chain_item($template_config['parent_template']);
         }
     }
 
@@ -950,17 +949,6 @@ class Layout
     }
 
     /**
-     * The template where this method is called extends the template $template
-     *
-     * @access public
-     * @param $template
-     * @return void
-     */
-    public function extend_template($template) {
-        $this->push_templates_chain_item($template);
-    }
-
-    /**
      * Include the template $template
      *
      * @access public
@@ -969,7 +957,8 @@ class Layout
      */
     public function include_template($template) {
         $this->push_templates_chain($template);
-        $this->include_snippet(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $this->get_current_root_template() . '.php');
+        $current_root_template = $this->get_current_root_template();
+        $this->include_snippet(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $current_root_template . DIRECTORY_SEPARATOR . $current_root_template . '.php');
         array_pop($this->templates_chains_stack);
     }
 
@@ -982,11 +971,7 @@ class Layout
      */
     public function block($block) {
         foreach ($this->get_current_templates_chain() as $template) {
-            if ($this->is_root_template($template)) {
-                $file = APPPATH . 'templates' . DIRECTORY_SEPARATOR . $block . '.php';
-            } else {
-                $file = APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $block . '.php';
-            }
+            $file = APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $block . '.php';
 
             if (file_exists($file)) {
                 $this->include_snippet($file);
@@ -1083,15 +1068,13 @@ class Layout
      * @return void
      */
     public function render_view($view, $data = array(), $autoloaded_assets = array()) {
-        if ( ! $this->is_template($this->template)) {
-            show_error('Layout error: The template does not exist.');
-        }
-
         $this->load_view($view, $data, 'main', $autoloaded_assets);
 
         $this->push_templates_chain($this->template);
 
-        $output = $this->CI->load->view('../templates/' . $this->get_current_root_template(), array('CI' => $this->CI), true);
+        $current_root_template = $this->get_current_root_template();
+
+        $output = $this->CI->load->view('../templates/' . $current_root_template . '/' . $current_root_template, array('CI' => $this->CI), true);
 
         echo $output;
     }

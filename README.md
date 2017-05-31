@@ -1,7 +1,22 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
-* **Version** : 2.1.0
+* **Version** : 3.0.0
+
+## Requirements
+The YAML extension must be installed:
+* Installation guidelines for PHP 5:
+   * sudo apt-get install php5-dev php-pear libyaml-dev
+   * sudo pecl install yaml
+   * sudo sh -c "echo 'extension=yaml.so' >> /etc/php5/mods-available/yaml.ini"
+   * sudo php5enmod yaml
+   * sudo service apache2 restart
+* Installation guidelines for PHP 7.0:
+   * sudo apt-get install php7.0-dev php-pear libyaml-dev
+   * sudo pecl install yaml-2.0.0
+   * sudo sh -c "echo 'extension=yaml.so' >> /etc/php/7.0/mods-available/yaml.ini"
+   * sudo phpenmod yaml
+   * sudo service apache2 restart
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php
@@ -129,15 +144,14 @@ Example:
 * **trigger_js_except()** : Trigger the insertion of the javascript assets except those that have a tag in common with the given tags
 
 ### The "template" section
-* **extend_template()** : Extend a template
 * **include_template()** : Include a template
 * **block()** : Define a block which should be implemented in a sub-template (but may also be implemented in the same template or inherited from an ancestor template)
 
 Note:
-* A root template (i.e. a template that does not extend another template) is a **file** in the templates folder.
-* A template that extends another template is a **folder** in the templates folder.  
-This folder must contain a file with the same name followed by the `.php` extension.  
-This file contains only one line: `<?php $CI->layout->extend_template('parent_template'); ?>`.
+* A template is a folder in the `./application/templates` folder.
+* Each template folder contains a YAML configuration file whose extension must be `.yml`.
+* This configuration file contains only one data: `parent_template` whose value is null or the name of the parent template.
+* For more details, see the examples in the `./application/templates` folder.
 
 ### The "view" section
 * **render_action_view()** : Render a view with the defined template  
