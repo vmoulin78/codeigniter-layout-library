@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     3.0.0
+ * @version     3.1.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -862,11 +862,32 @@ class Layout
     private function is_template($template) {
         if (is_string($template)
             && ( ! empty($template))
-            && (file_exists(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $template . '.yml'))
+            && (file_exists(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template))
         ) {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Return the configuration of the template $template
+     *
+     * @access private
+     * @param $template
+     * @return The configuration of the template $template
+     */
+    private function template_config($template) {
+        $template_path = APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR;
+
+        if (file_exists($template_path . 'config.yml')) {
+            return yaml_parse_file($template_path . 'config.yml');
+        } elseif (file_exists($template_path . 'config.php')) {
+            include($template_path . 'config.php');
+            return $config;
+        } else {
+            set_status_header(500);
+            exit('Layout error: Missing template configuration file');
         }
     }
 
@@ -918,6 +939,8 @@ class Layout
         return array_pop($current_templates_chain);
     }
 
+
+
     /**
      * Push the template $template in the current templates chain
      *
@@ -926,11 +949,16 @@ class Layout
      * @return void
      */
     private function push_templates_chain_item($template) {
+        if ( ! $this->is_template($template)) {
+            set_status_header(500);
+            exit('Layout error: Incorrect templates structure');
+        }
+
         $templates_chain = array_pop($this->templates_chains_stack);
         array_push($templates_chain, $template);
         array_push($this->templates_chains_stack, $templates_chain);
 
-        $template_config = yaml_parse_file(APPPATH . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . $template . '.yml');
+        $template_config = $this->template_config($template);
         if ( ! is_null($template_config['parent_template'])) {
             $this->push_templates_chain_item($template_config['parent_template']);
         }

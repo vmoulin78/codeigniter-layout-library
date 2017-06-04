@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+?><!DOCTYPE html>
 <html> 
     <head>
         <?php $CI->layout->trigger_title(); ?>
@@ -26,7 +28,7 @@
 
             <hr />
 
-            <?php $CI->layout->include_template('footer_template'); ?>
+            <?php $CI->layout->include_template('footer_partial'); ?>
         </div>
 
         <?php $CI->layout->trigger_js(); ?>

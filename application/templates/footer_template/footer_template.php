@@ -1,3 +1,0 @@
-<footer>
-    The footer
-</footer>

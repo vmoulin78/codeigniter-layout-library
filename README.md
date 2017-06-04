@@ -1,22 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
-* **Version** : 3.0.0
-
-## Requirements
-The YAML extension must be installed:
-* Installation guidelines for PHP 5:
-   * sudo apt-get install php5-dev php-pear libyaml-dev
-   * sudo pecl install yaml
-   * sudo sh -c "echo 'extension=yaml.so' >> /etc/php5/mods-available/yaml.ini"
-   * sudo php5enmod yaml
-   * sudo service apache2 restart
-* Installation guidelines for PHP 7.0:
-   * sudo apt-get install php7.0-dev php-pear libyaml-dev
-   * sudo pecl install yaml-2.0.0
-   * sudo sh -c "echo 'extension=yaml.so' >> /etc/php/7.0/mods-available/yaml.ini"
-   * sudo phpenmod yaml
-   * sudo service apache2 restart
+* **Version** : 3.1.0
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php
@@ -149,7 +134,7 @@ Example:
 
 Note:
 * A template is a folder in the `./application/templates` folder.
-* Each template folder contains a YAML configuration file whose extension must be `.yml`.
+* Each template folder contains a PHP or YAML configuration file (`config.php` or `config.yml`).
 * This configuration file contains only one data: `parent_template` whose value is null or the name of the parent template.
 * For more details, see the examples in the `./application/templates` folder.
 
