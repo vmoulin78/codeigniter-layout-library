@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
-* **Version** : 3.1.0
+* **Version** : 3.2.0
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php
@@ -80,8 +80,10 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 * **return_breadcrumb()** : Return the breadcrumb
 
 ### The "asset" section
-* **add_css()** : Add a css asset to the layout
-* **add_js()** : Add a javascript asset to the layout
+* **add_css_uri()** : Add a css uri asset to the layout
+* **add_css_str()** : Add a css string asset to the layout
+* **add_js_uri()** : Add a javascript uri asset to the layout
+* **add_js_str()** : Add a javascript string asset to the layout
 * **add_basic_css()** : Add the basic css assets according to the given tags or all the basic css assets
 * **add_basic_js()** : Add the basic javascript assets according to the given tags or all the basic javascript assets
 * **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets
@@ -96,7 +98,7 @@ Example:
     $config['layout_basic_css'] = array(
         'css/app.css',
         array(
-            'href'        => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
+            'uri'         => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
             'location'    => 'remote',
             'attributes'  => array(
                 'integrity'    => 'sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u',
@@ -107,7 +109,7 @@ Example:
     $config['layout_basic_js'] = array(
         'js/app.js',
         array(
-            'href'        => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
+            'uri'         => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
             'location'    => 'remote',
             'attributes'  => array(
                 'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',

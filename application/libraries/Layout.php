@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     3.1.0
+ * @version     3.2.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -312,196 +312,256 @@ class Layout
     */
 
     /**
-     * Get the absolute href of the asset whose href is $href and location is $location
+     * Get the absolute href of the asset whose uri is $uri and location is $location
      *
      * @access private
-     * @param $href
+     * @param $uri
      * @param $location ['local'|'remote']
-     * @return The absolute href of the asset whose href is $href and location is $location
+     * @return The absolute href of the asset whose uri is $uri and location is $location
      */
-    private function asset_absolute_href($href, $location) {
+    private function asset_absolute_href($uri, $location) {
         switch ($location) {
             case 'local':
-                return base_url() . $this->CI->config->item('layout_web_folder') . '/' . $href;
+                return base_url() . $this->CI->config->item('layout_web_folder') . '/' . $uri;
             case 'remote':
-                return $href;
+                return $uri;
             default:
                 show_error('Layout error: Incorrect parameter');
         }
     }
 
     /**
-     * Add the css asset $css to the layout
+     * Check if the css tags $tags are correctly defined in $this->CI->config->item('layout_css_tags')
      *
-     * If $css is a string, it is considered as a 'local' css asset with no additional attributes and no tags.
-     * Example: $CI->layout->add_css('css/controllers/Welcome/actions/hello.css');
+     * @access private
+     * @param $tags
+     * @return void
+     */
+    private function check_css_tags(array $tags) {
+        if ( ! empty(array_diff($tags, $this->CI->config->item('layout_css_tags')))) {
+            show_error('Layout error: Unknown tag for css asset');
+        }
+    }
+
+    /**
+     * Check if the javascript tags $tags are correctly defined in $this->CI->config->item('layout_js_tags')
      *
-     * If $css is an array, it must be an associative array and must have one mandatory key 'href'.
-     * The optional keys are:
-     *     'location'    -> default value: 'local'
-     *     'attributes'  -> default value: [] (i.e. no additional attributes)
-     *     'tags'        -> default value: [] (i.e. no tags)
+     * @access private
+     * @param $tags
+     * @return void
+     */
+    private function check_js_tags(array $tags) {
+        if ( ! empty(array_diff($tags, $this->CI->config->item('layout_js_tags')))) {
+            show_error('Layout error: Unknown tag for javascript asset');
+        }
+    }
+
+    /**
+     * Complete the css uri data $css with the default values
+     *
+     * @access private
+     * @param $css
+     * @return void
+     */
+    private function complete_css_uri_data(&$css) {
+        if (is_string($css)) {
+            $css = ['uri' => $css];
+        }
+
+        $reflector = new ReflectionClass(__CLASS__);
+
+        foreach ($reflector->getMethod('add_css_uri')->getParameters() as $parameter) {
+            if (in_array($parameter->getName(), array('location', 'attributes', 'tags'))) {
+                if ( ! isset($css[$parameter->getName()])) {
+                    $css[$parameter->getName()] = $parameter->getDefaultValue();
+                }
+            }
+        }
+    }
+
+    /**
+     * Complete the javascript uri data $js with the default values
+     *
+     * @access private
+     * @param $js
+     * @return void
+     */
+    private function complete_js_uri_data(&$js) {
+        if (is_string($js)) {
+            $js = ['uri' => $js];
+        }
+
+        $reflector = new ReflectionClass(__CLASS__);
+
+        foreach ($reflector->getMethod('add_js_uri')->getParameters() as $parameter) {
+            if (in_array($parameter->getName(), array('location', 'attributes', 'tags'))) {
+                if ( ! isset($js[$parameter->getName()])) {
+                    $js[$parameter->getName()] = $parameter->getDefaultValue();
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a css uri asset to the layout
+     *
+     * If $location is 'local' then the reference folder is ./{$config['layout_web_folder']}/
      *
      * Example 1:
-     * $CI->layout->add_css(array(
-     *     'href'        => 'css/controllers/Welcome/actions/hello.css',
-     *     'location'    => 'local', // this line may be removed because 'local' is the default value for 'location'
-     *     'attributes'  => ['media' => 'screen'],
-     *     'tags'        => ['tag1', 'tag2'],
-     * ));
+     * $CI->layout->add_css_uri('css/controllers/Welcome/actions/hello.css');
      *
      * Example 2:
-     * $CI->layout->add_css(array(
-     *     'href'        => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
-     *     'location'    => 'remote',
-     *     'attributes'  => array(
+     * $CI->layout->add_css_uri(
+     *     'css/controllers/Welcome/actions/hello.css',
+     *     'local',
+     *     ['media' => 'screen'],
+     *     ['tag1', 'tag2']
+     * );
+     *
+     * Example 3:
+     * $CI->layout->add_css_uri(
+     *     'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
+     *     'remote',
+     *     array(
      *         'integrity'    => 'sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u',
      *         'crossorigin'  => 'anonymous',
-     *     ),
-     * ));
+     *     )
+     * );
      *
      * @access public
-     * @param $css
-     * @return true if the css asset $css has been added successfully and false otherwise
+     * @param $uri
+     * @param $location
+     * @param $attributes
+     * @param $tags
+     * @return $this if the css asset has been added successfully and false otherwise
      */
-    public function add_css($css) {
-        if ( ! is_array($css)) {
-            $css = array('href' => $css);
+    public function add_css_uri($uri, $location = 'local', array $attributes = [], array $tags = []) {
+        if ( ! in_array($location, array('local', 'remote'))) {
+            show_error('Layout error: Incorrect location for css asset');
         }
 
-        if (isset($css['href'])
-            && is_string($css['href'])
-            && ( ! empty($css['href']))
-        ) {
-            $href = $css['href'];
-        } else {
-            show_error('Layout error: Incorrect href for css file');
-        }
+        $this->check_css_tags($tags);
 
-        if (isset($css['location'])) {
-            $location = $css['location'];
-            if ( ! in_array($location, array('local', 'remote'))) {
-                show_error('Layout error: Incorrect location for css file');
-            }
-        } else {
-            $location = 'local';
-        }
-
-        if (isset($css['attributes'])) {
-            $attributes = $css['attributes'];
-        } else {
-            $attributes = array();
-        }
-
-        if (isset($css['tags'])) {
-            $tags = $css['tags'];
-            if ( ! empty(array_diff($tags, $this->CI->config->item('layout_css_tags')))) {
-                show_error('Layout error: Unknown tag for css file');
-            }
-        } else {
-            $tags = array();
-        }
-
-        if (($location === 'local')
-            && ( ! file_exists(FCPATH . $this->CI->config->item('layout_web_folder') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $href)))
+        if (($location == 'local')
+            && ( ! file_exists(FCPATH . $this->CI->config->item('layout_web_folder') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $uri)))
         ) {
             return false;
         }
 
         $this->css[] = array(
-            'absolute_href'  => $this->asset_absolute_href($href, $location),
+            'type'           => 'uri',
+            'absolute_href'  => $this->asset_absolute_href($uri, $location),
             'attributes'     => $attributes,
             'tags'           => $tags,
         );
 
-        return true;
+        return $this;
     }
 
     /**
-     * Add the javascript asset $js to the layout
+     * Add a css string asset to the layout
      *
-     * If $js is a string, it is considered as a 'local' javascript asset with no additional attributes and no tags.
-     * Example: $CI->layout->add_js('js/controllers/Welcome/actions/hello.js');
-     *
-     * If $js is an array, it must be an associative array and must have one mandatory key 'href'.
-     * The optional keys are:
-     *     'location'    -> default value: 'local'
-     *     'attributes'  -> default value: [] (i.e. no additional attributes)
-     *     'tags'        -> default value: [] (i.e. no tags)
-     *
-     * Example 1 (assuming jquery is a 'local' asset):
-     * $CI->layout->add_js(array(
-     *     'href'        => 'third_party/jquery/js/jquery.js',
-     *     'location'    => 'local', // this line may be removed because 'local' is the default value for 'location'
-     *     'attributes'  => ['charset' => 'UTF-8'],
-     *     'tags'        => ['tag1', 'tag2'],
-     * ));
-     *
-     * Example 2 (assuming bootstrap is a 'remote' asset):
-     * $CI->layout->add_js(array(
-     *     'href'        => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
-     *     'location'    => 'remote',
-     *     'attributes'  => array(
-     *         'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',
-     *         'crossorigin'  => 'anonymous',
-     *     ),
-     * ));
+     * Example:
+     * $CI->layout->add_css_str('body {font-size: 14px;}');
      *
      * @access public
-     * @param $js
-     * @return true if the javascript asset $js has been added successfully and false otherwise
+     * @param $str contains some css code
+     * @param $attributes
+     * @param $tags
+     * @return $this
      */
-    public function add_js($js) {
-        if ( ! is_array($js)) {
-            $js = array('href' => $js);
+    public function add_css_str($str, array $attributes = [], array $tags = []) {
+        $this->check_css_tags($tags);
+
+        $this->css[] = array(
+            'type'           => 'str',
+            'content'        => $str,
+            'attributes'     => $attributes,
+            'tags'           => $tags,
+        );
+
+        return $this;
+    }
+
+    /**
+     * Add a javascript uri asset to the layout
+     *
+     * If $location is 'local' then the reference folder is ./{$config['layout_web_folder']}/
+     *
+     * Example 1:
+     * $CI->layout->add_js_uri('js/controllers/Welcome/actions/hello.js');
+     *
+     * Example 2 (assuming jquery is a 'local' asset):
+     * $CI->layout->add_js_uri(
+     *     'third_party/jquery/js/jquery.js',
+     *     'local',
+     *     ['charset' => 'UTF-8'],
+     *     ['tag1', 'tag2']
+     * );
+     *
+     * Example 3 (assuming bootstrap is a 'remote' asset):
+     * $CI->layout->add_js_uri(
+     *     'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
+     *     'remote',
+     *     array(
+     *         'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',
+     *         'crossorigin'  => 'anonymous',
+     *     )
+     * );
+     *
+     * @access public
+     * @param $uri
+     * @param $location
+     * @param $attributes
+     * @param $tags
+     * @return $this if the javascript asset has been added successfully and false otherwise
+     */
+    public function add_js_uri($uri, $location = 'local', array $attributes = [], array $tags = []) {
+        if ( ! in_array($location, array('local', 'remote'))) {
+            show_error('Layout error: Incorrect location for javascript asset');
         }
 
-        if (isset($js['href'])
-            && is_string($js['href'])
-            && ( ! empty($js['href']))
-        ) {
-            $href = $js['href'];
-        } else {
-            show_error('Layout error: Incorrect href for javascript file');
-        }
+        $this->check_js_tags($tags);
 
-        if (isset($js['location'])) {
-            $location = $js['location'];
-            if ( ! in_array($location, array('local', 'remote'))) {
-                show_error('Layout error: Incorrect location for javascript file');
-            }
-        } else {
-            $location = 'local';
-        }
-
-        if (isset($js['attributes'])) {
-            $attributes = $js['attributes'];
-        } else {
-            $attributes = array();
-        }
-
-        if (isset($js['tags'])) {
-            $tags = $js['tags'];
-            if ( ! empty(array_diff($tags, $this->CI->config->item('layout_js_tags')))) {
-                show_error('Layout error: Unknown tag for javascript file');
-            }
-        } else {
-            $tags = array();
-        }
-
-        if (($location === 'local')
-            && ( ! file_exists(FCPATH . $this->CI->config->item('layout_web_folder') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $href)))
+        if (($location == 'local')
+            && ( ! file_exists(FCPATH . $this->CI->config->item('layout_web_folder') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $uri)))
         ) {
             return false;
         }
 
         $this->js[] = array(
-            'absolute_href'  => $this->asset_absolute_href($href, $location),
+            'type'           => 'uri',
+            'absolute_href'  => $this->asset_absolute_href($uri, $location),
             'attributes'     => $attributes,
             'tags'           => $tags,
         );
 
-        return true;
+        return $this;
+    }
+
+    /**
+     * Add a javascript string asset to the layout
+     *
+     * Example:
+     * $CI->layout->add_js_str('var refresh_interval = 30;');
+     *
+     * @access public
+     * @param $str contains some javascript code
+     * @param $attributes
+     * @param $tags
+     * @return $this
+     */
+    public function add_js_str($str, array $attributes = [], array $tags = []) {
+        $this->check_js_tags($tags);
+
+        $this->js[] = array(
+            'type'           => 'str',
+            'content'        => $str,
+            'attributes'     => $attributes,
+            'tags'           => $tags,
+        );
+
+        return $this;
     }
 
     /**
@@ -525,8 +585,9 @@ class Layout
             if (is_null($tags)
                 || (isset($css['tags']) && ( ! empty(array_intersect($css['tags'], $tags))))
             ) {
-                if ($this->add_css($css) === false) {
-                    show_error('Layout error: Incorrect css file in basic assets');
+                $this->complete_css_uri_data($css);
+                if ($this->add_css_uri($css['uri'], $css['location'], $css['attributes'], $css['tags']) === false) {
+                    show_error('Layout error: Incorrect css asset in basic assets');
                 }
             }
         }
@@ -555,8 +616,9 @@ class Layout
             if (is_null($tags)
                 || (isset($js['tags']) && ( ! empty(array_intersect($js['tags'], $tags))))
             ) {
-                if ($this->add_js($js) === false) {
-                    show_error('Layout error: Incorrect javascript file in basic assets');
+                $this->complete_js_uri_data($js);
+                if ($this->add_js_uri($js['uri'], $js['location'], $js['attributes'], $js['tags']) === false) {
+                    show_error('Layout error: Incorrect javascript asset in basic assets');
                 }
             }
         }
@@ -599,8 +661,9 @@ class Layout
             if (( ! isset($css['tags']))
                 || (empty(array_intersect($css['tags'], $tags)))
             ) {
-                if ($this->add_css($css) === false) {
-                    show_error('Layout error: Incorrect css file in basic assets');
+                $this->complete_css_uri_data($css);
+                if ($this->add_css_uri($css['uri'], $css['location'], $css['attributes'], $css['tags']) === false) {
+                    show_error('Layout error: Incorrect css asset in basic assets');
                 }
             }
         }
@@ -626,8 +689,9 @@ class Layout
             if (( ! isset($js['tags']))
                 || (empty(array_intersect($js['tags'], $tags)))
             ) {
-                if ($this->add_js($js) === false) {
-                    show_error('Layout error: Incorrect javascript file in basic assets');
+                $this->complete_js_uri_data($js);
+                if ($this->add_js_uri($js['uri'], $js['location'], $js['attributes'], $js['tags']) === false) {
+                    show_error('Layout error: Incorrect javascript asset in basic assets');
                 }
             }
         }
@@ -667,11 +731,26 @@ class Layout
      * @return void
      */
     private function insert_css($css) {
-        echo '<link rel="stylesheet" type="text/css" href="' . $css['absolute_href'] . '"';
-        foreach ($css['attributes'] as $attribute_name => $attribute_value) {
-            echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+        switch ($css['type']) {
+            case 'uri':
+                echo '<link rel="stylesheet" type="text/css" href="' . $css['absolute_href'] . '"';
+                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
+                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+                }
+                echo ' />';
+                break;
+            case 'str':
+                echo '<style type="text/css"';
+                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
+                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+                }
+                echo '>';
+                echo $css['content'];
+                echo '</style>';
+                break;
+            default:
+                break;
         }
-        echo ' />';
     }
 
     /**
@@ -682,11 +761,26 @@ class Layout
      * @return void
      */
     private function insert_js($js) {
-        echo '<script type="text/javascript" src="' . $js['absolute_href'] . '"';
-        foreach ($js['attributes'] as $attribute_name => $attribute_value) {
-            echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+        switch ($js['type']) {
+            case 'uri':
+                echo '<script type="text/javascript" src="' . $js['absolute_href'] . '"';
+                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
+                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+                }
+                echo '></script>';
+                break;
+            case 'str':
+                echo '<script type="text/javascript"';
+                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
+                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+                }
+                echo '>';
+                echo $js['content'];
+                echo '</script>';
+                break;
+            default:
+                break;
         }
-        echo '></script>';
     }
 
     /**
@@ -1041,11 +1135,11 @@ class Layout
         }
 
         if (in_array('css', $autoloaded_assets)) {
-            $this->add_css('css/' . $view . '.css');
+            $this->add_css_uri('css/' . $view . '.css');
         }
 
         if (in_array('js', $autoloaded_assets)) {
-            $this->add_js('js/' . $view . '.js');
+            $this->add_js_uri('js/' . $view . '.js');
         }
 
         if ($is_returned) {
@@ -1123,11 +1217,11 @@ class Layout
         $controller = $this->CI->router->fetch_class();
         $action = $this->CI->router->fetch_method();
         
-        $this->add_css('css/controllers/' . $controller . '/controller.css');
-        $this->add_css('css/controllers/' . $controller . '/actions/' . $action . '.css');
+        $this->add_css_uri('css/controllers/' . $controller . '/controller.css');
+        $this->add_css_uri('css/controllers/' . $controller . '/actions/' . $action . '.css');
 
-        $this->add_js('js/controllers/' . $controller . '/controller.js');
-        $this->add_js('js/controllers/' . $controller . '/actions/' . $action . '.js');
+        $this->add_js_uri('js/controllers/' . $controller . '/controller.js');
+        $this->add_js_uri('js/controllers/' . $controller . '/actions/' . $action . '.js');
 
         $this->render_view('controllers/' . $controller . '/actions/' . $action, $data);
     }
