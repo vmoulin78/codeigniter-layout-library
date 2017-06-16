@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     3.2.0
+ * @version     3.3.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -357,48 +357,122 @@ class Layout
     }
 
     /**
-     * Complete the css uri data $css with the default values
+     * Complete the css asset data $css with the default values
      *
      * @access private
      * @param $css
      * @return void
      */
-    private function complete_css_uri_data(&$css) {
+    private function complete_css_data(&$css) {
         if (is_string($css)) {
-            $css = ['uri' => $css];
+            $css = array(
+                'type'  => 'uri',
+                'uri'   => $css,
+            );
         }
 
         $reflector = new ReflectionClass(__CLASS__);
 
-        foreach ($reflector->getMethod('add_css_uri')->getParameters() as $parameter) {
-            if (in_array($parameter->getName(), array('location', 'attributes', 'tags'))) {
-                if ( ! isset($css[$parameter->getName()])) {
-                    $css[$parameter->getName()] = $parameter->getDefaultValue();
+        switch ($css['type']) {
+            case 'uri':
+                $parameters = array('location', 'attributes', 'tags');
+                break;
+            case 'str':
+                $parameters = array('attributes', 'tags');
+                break;
+            case 'php':
+                $parameters = array('args', 'attributes', 'tags');
+                break;
+            default:
+                break;
+        }
+
+        foreach ($reflector->getMethod('add_css_' . $css['type'])->getParameters() as $item) {
+            if (in_array($item->getName(), $parameters)) {
+                if ( ! isset($css[$item->getName()])) {
+                    $css[$item->getName()] = $item->getDefaultValue();
                 }
             }
         }
     }
 
     /**
-     * Complete the javascript uri data $js with the default values
+     * Complete the javascript asset data $js with the default values
      *
      * @access private
      * @param $js
      * @return void
      */
-    private function complete_js_uri_data(&$js) {
+    private function complete_js_data(&$js) {
         if (is_string($js)) {
-            $js = ['uri' => $js];
+            $js = array(
+                'type'  => 'uri',
+                'uri'   => $js,
+            );
         }
 
         $reflector = new ReflectionClass(__CLASS__);
 
-        foreach ($reflector->getMethod('add_js_uri')->getParameters() as $parameter) {
-            if (in_array($parameter->getName(), array('location', 'attributes', 'tags'))) {
-                if ( ! isset($js[$parameter->getName()])) {
-                    $js[$parameter->getName()] = $parameter->getDefaultValue();
+        switch ($js['type']) {
+            case 'uri':
+                $parameters = array('location', 'attributes', 'tags');
+                break;
+            case 'str':
+                $parameters = array('attributes', 'tags');
+                break;
+            case 'php':
+                $parameters = array('args', 'attributes', 'tags');
+                break;
+            default:
+                break;
+        }
+
+        foreach ($reflector->getMethod('add_js_' . $js['type'])->getParameters() as $item) {
+            if (in_array($item->getName(), $parameters)) {
+                if ( ! isset($js[$item->getName()])) {
+                    $js[$item->getName()] = $item->getDefaultValue();
                 }
             }
+        }
+    }
+
+    /**
+     * Add the css asset $css to the layout
+     *
+     * @access private
+     * @param $css
+     * @return $this
+     */
+    private function add_css(array $css) {
+        switch ($css['type']) {
+            case 'uri':
+                return $this->add_css_uri($css['uri'], $css['location'], $css['attributes'], $css['tags']);
+            case 'str':
+                return $this->add_css_str($css['content'], $css['attributes'], $css['tags']);
+            case 'php':
+                return $this->add_css_php($css['callback'], $css['args'], $css['attributes'], $css['tags']);
+            default:
+                return;
+        }
+    }
+
+    /**
+     * Add the javascript asset $js to the layout
+     *
+     * @access private
+     * @param $js
+     * @return $this
+     */
+    private function add_js(array $js) {
+        switch ($js['type']) {
+            case 'uri':
+                return $this->add_js_uri($js['uri'], $js['location'], $js['attributes'], $js['tags']);
+            case 'str':
+                return $this->add_js_str($js['content'], $js['attributes'], $js['tags']);
+            case 'php':
+                return $this->add_js_php($js['callback'], $js['args'], $js['attributes'], $js['tags']);
+            default:
+                return;
         }
     }
 
@@ -433,11 +507,12 @@ class Layout
      * @param $location
      * @param $attributes
      * @param $tags
-     * @return $this if the css asset has been added successfully and false otherwise
+     * @param $return_bool
+     * @return $this if $return_bool is false, otherwise true if the css asset has been added successfully and false otherwise
      */
-    public function add_css_uri($uri, $location = 'local', array $attributes = [], array $tags = []) {
+    public function add_css_uri($uri, $location = 'local', array $attributes = [], array $tags = [], bool $return_bool = false) {
         if ( ! in_array($location, array('local', 'remote'))) {
-            show_error('Layout error: Incorrect location for css asset');
+            show_error('Layout error: Incorrect location for css uri asset');
         }
 
         $this->check_css_tags($tags);
@@ -445,7 +520,11 @@ class Layout
         if (($location == 'local')
             && ( ! file_exists(FCPATH . $this->CI->config->item('layout_web_folder') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $uri)))
         ) {
-            return false;
+            if ($return_bool) {
+                return false;
+            } else {
+                show_error('Layout error: Incorrect css uri asset');
+            }
         }
 
         $this->css[] = array(
@@ -455,7 +534,11 @@ class Layout
             'tags'           => $tags,
         );
 
-        return $this;
+        if ($return_bool) {
+            return true;
+        } else {
+            return $this;
+        }
     }
 
     /**
@@ -465,22 +548,78 @@ class Layout
      * $CI->layout->add_css_str('body {font-size: 14px;}');
      *
      * @access public
-     * @param $str contains some css code
+     * @param $content Some css code
      * @param $attributes
      * @param $tags
-     * @return $this
+     * @param $return_bool
+     * @return $this if $return_bool is false, otherwise true if the css asset has been added successfully and false otherwise
      */
-    public function add_css_str($str, array $attributes = [], array $tags = []) {
+    public function add_css_str($content, array $attributes = [], array $tags = [], bool $return_bool = false) {
         $this->check_css_tags($tags);
 
+        if ( ! is_string($content)) {
+            if ($return_bool) {
+                return false;
+            } else {
+                show_error('Layout error: Incorrect css string asset');
+            }
+        }
+
         $this->css[] = array(
-            'type'           => 'str',
-            'content'        => $str,
-            'attributes'     => $attributes,
-            'tags'           => $tags,
+            'type'        => 'str',
+            'content'     => $content,
+            'attributes'  => $attributes,
+            'tags'        => $tags,
         );
 
-        return $this;
+        if ($return_bool) {
+            return true;
+        } else {
+            return $this;
+        }
+    }
+
+    /**
+     * Add a css php asset to the layout
+     *
+     * Example 1:
+     * $CI->layout->add_css_php('my_function');
+     *
+     * Example 2:
+     * $CI->layout->add_css_php(array('My_class', 'my_method'));
+     *
+     * @access public
+     * @param $callback A php function which returns some css code
+     * @param $args The arguments used with the php function $callback
+     * @param $attributes
+     * @param $tags
+     * @param $return_bool
+     * @return $this if $return_bool is false, otherwise true if the css asset has been added successfully and false otherwise
+     */
+    public function add_css_php($callback, array $args = [], array $attributes = [], array $tags = [], bool $return_bool = false) {
+        $this->check_css_tags($tags);
+
+        if ( ! is_callable($callback)) {
+            if ($return_bool) {
+                return false;
+            } else {
+                show_error('Layout error: Incorrect css php asset');
+            }
+        }
+
+        $this->css[] = array(
+            'type'        => 'php',
+            'callback'    => $callback,
+            'args'        => $args,
+            'attributes'  => $attributes,
+            'tags'        => $tags,
+        );
+
+        if ($return_bool) {
+            return true;
+        } else {
+            return $this;
+        }
     }
 
     /**
@@ -514,11 +653,12 @@ class Layout
      * @param $location
      * @param $attributes
      * @param $tags
-     * @return $this if the javascript asset has been added successfully and false otherwise
+     * @param $return_bool
+     * @return $this if $return_bool is false, otherwise true if the javascript asset has been added successfully and false otherwise
      */
-    public function add_js_uri($uri, $location = 'local', array $attributes = [], array $tags = []) {
+    public function add_js_uri($uri, $location = 'local', array $attributes = [], array $tags = [], bool $return_bool = false) {
         if ( ! in_array($location, array('local', 'remote'))) {
-            show_error('Layout error: Incorrect location for javascript asset');
+            show_error('Layout error: Incorrect location for javascript uri asset');
         }
 
         $this->check_js_tags($tags);
@@ -526,7 +666,11 @@ class Layout
         if (($location == 'local')
             && ( ! file_exists(FCPATH . $this->CI->config->item('layout_web_folder') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $uri)))
         ) {
-            return false;
+            if ($return_bool) {
+                return false;
+            } else {
+                show_error('Layout error: Incorrect javascript uri asset');
+            }
         }
 
         $this->js[] = array(
@@ -536,7 +680,11 @@ class Layout
             'tags'           => $tags,
         );
 
-        return $this;
+        if ($return_bool) {
+            return true;
+        } else {
+            return $this;
+        }
     }
 
     /**
@@ -546,22 +694,78 @@ class Layout
      * $CI->layout->add_js_str('var refresh_interval = 30;');
      *
      * @access public
-     * @param $str contains some javascript code
+     * @param $content Some javascript code
      * @param $attributes
      * @param $tags
-     * @return $this
+     * @param $return_bool
+     * @return $this if $return_bool is false, otherwise true if the javascript asset has been added successfully and false otherwise
      */
-    public function add_js_str($str, array $attributes = [], array $tags = []) {
+    public function add_js_str($content, array $attributes = [], array $tags = [], bool $return_bool = false) {
         $this->check_js_tags($tags);
 
+        if ( ! is_string($content)) {
+            if ($return_bool) {
+                return false;
+            } else {
+                show_error('Layout error: Incorrect javascript string asset');
+            }
+        }
+
         $this->js[] = array(
-            'type'           => 'str',
-            'content'        => $str,
-            'attributes'     => $attributes,
-            'tags'           => $tags,
+            'type'        => 'str',
+            'content'     => $content,
+            'attributes'  => $attributes,
+            'tags'        => $tags,
         );
 
-        return $this;
+        if ($return_bool) {
+            return true;
+        } else {
+            return $this;
+        }
+    }
+
+    /**
+     * Add a javascript php asset to the layout
+     *
+     * Example 1:
+     * $CI->layout->add_js_php('my_function');
+     *
+     * Example 2:
+     * $CI->layout->add_js_php(array('My_class', 'my_method'));
+     *
+     * @access public
+     * @param $callback A php function which returns some javascript code
+     * @param $args The arguments used with the php function $callback
+     * @param $attributes
+     * @param $tags
+     * @param $return_bool
+     * @return $this if $return_bool is false, otherwise true if the javascript asset has been added successfully and false otherwise
+     */
+    public function add_js_php($callback, array $args = [], array $attributes = [], array $tags = [], bool $return_bool = false) {
+        $this->check_js_tags($tags);
+
+        if ( ! is_callable($callback)) {
+            if ($return_bool) {
+                return false;
+            } else {
+                show_error('Layout error: Incorrect javascript php asset');
+            }
+        }
+
+        $this->js[] = array(
+            'type'        => 'php',
+            'callback'    => $callback,
+            'args'        => $args,
+            'attributes'  => $attributes,
+            'tags'        => $tags,
+        );
+
+        if ($return_bool) {
+            return true;
+        } else {
+            return $this;
+        }
     }
 
     /**
@@ -582,11 +786,13 @@ class Layout
         }
 
         foreach ($this->CI->config->item('layout_basic_css') as $css) {
+            $this->complete_css_data($css);
+
             if (is_null($tags)
-                || (isset($css['tags']) && ( ! empty(array_intersect($css['tags'], $tags))))
+                || ( ! empty(array_intersect($css['tags'], $tags)))
             ) {
-                $this->complete_css_uri_data($css);
-                if ($this->add_css_uri($css['uri'], $css['location'], $css['attributes'], $css['tags']) === false) {
+                $result = $this->add_css($css);
+                if ($result === false) {
                     show_error('Layout error: Incorrect css asset in basic assets');
                 }
             }
@@ -613,11 +819,13 @@ class Layout
         }
 
         foreach ($this->CI->config->item('layout_basic_js') as $js) {
+            $this->complete_js_data($js);
+
             if (is_null($tags)
-                || (isset($js['tags']) && ( ! empty(array_intersect($js['tags'], $tags))))
+                || ( ! empty(array_intersect($js['tags'], $tags)))
             ) {
-                $this->complete_js_uri_data($js);
-                if ($this->add_js_uri($js['uri'], $js['location'], $js['attributes'], $js['tags']) === false) {
+                $result = $this->add_js($js);
+                if ($result === false) {
                     show_error('Layout error: Incorrect javascript asset in basic assets');
                 }
             }
@@ -658,11 +866,11 @@ class Layout
         }
 
         foreach ($this->CI->config->item('layout_basic_css') as $css) {
-            if (( ! isset($css['tags']))
-                || (empty(array_intersect($css['tags'], $tags)))
-            ) {
-                $this->complete_css_uri_data($css);
-                if ($this->add_css_uri($css['uri'], $css['location'], $css['attributes'], $css['tags']) === false) {
+            $this->complete_css_data($css);
+
+            if (empty(array_intersect($css['tags'], $tags))) {
+                $result = $this->add_css($css);
+                if ($result === false) {
                     show_error('Layout error: Incorrect css asset in basic assets');
                 }
             }
@@ -686,11 +894,11 @@ class Layout
         }
 
         foreach ($this->CI->config->item('layout_basic_js') as $js) {
-            if (( ! isset($js['tags']))
-                || (empty(array_intersect($js['tags'], $tags)))
-            ) {
-                $this->complete_js_uri_data($js);
-                if ($this->add_js_uri($js['uri'], $js['location'], $js['attributes'], $js['tags']) === false) {
+            $this->complete_js_data($js);
+
+            if (empty(array_intersect($js['tags'], $tags))) {
+                $result = $this->add_js($js);
+                if ($result === false) {
                     show_error('Layout error: Incorrect javascript asset in basic assets');
                 }
             }
@@ -748,6 +956,15 @@ class Layout
                 echo $css['content'];
                 echo '</style>';
                 break;
+            case 'php':
+                echo '<style type="text/css"';
+                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
+                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+                }
+                echo '>';
+                echo call_user_func_array($css['callback'], $css['args']);
+                echo '</style>';
+                break;
             default:
                 break;
         }
@@ -776,6 +993,15 @@ class Layout
                 }
                 echo '>';
                 echo $js['content'];
+                echo '</script>';
+                break;
+            case 'php':
+                echo '<script type="text/javascript"';
+                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
+                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
+                }
+                echo '>';
+                echo call_user_func_array($js['callback'], $js['args']);
                 echo '</script>';
                 break;
             default:
@@ -1135,11 +1361,11 @@ class Layout
         }
 
         if (in_array('css', $autoloaded_assets)) {
-            $this->add_css_uri('css/' . $view . '.css');
+            $this->add_css_uri('css/' . $view . '.css', 'local', [], [], true);
         }
 
         if (in_array('js', $autoloaded_assets)) {
-            $this->add_js_uri('js/' . $view . '.js');
+            $this->add_js_uri('js/' . $view . '.js', 'local', [], [], true);
         }
 
         if ($is_returned) {
@@ -1217,11 +1443,11 @@ class Layout
         $controller = $this->CI->router->fetch_class();
         $action = $this->CI->router->fetch_method();
         
-        $this->add_css_uri('css/controllers/' . $controller . '/controller.css');
-        $this->add_css_uri('css/controllers/' . $controller . '/actions/' . $action . '.css');
+        $this->add_css_uri('css/controllers/' . $controller . '/controller.css', 'local', [], [], true);
+        $this->add_css_uri('css/controllers/' . $controller . '/actions/' . $action . '.css', 'local', [], [], true);
 
-        $this->add_js_uri('js/controllers/' . $controller . '/controller.js');
-        $this->add_js_uri('js/controllers/' . $controller . '/actions/' . $action . '.js');
+        $this->add_js_uri('js/controllers/' . $controller . '/controller.js', 'local', [], [], true);
+        $this->add_js_uri('js/controllers/' . $controller . '/actions/' . $action . '.js', 'local', [], [], true);
 
         $this->render_view('controllers/' . $controller . '/actions/' . $action, $data);
     }

@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
-* **Version** : 3.2.0
+* **Version** : 3.3.0
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php
@@ -82,8 +82,10 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 ### The "asset" section
 * **add_css_uri()** : Add a css uri asset to the layout
 * **add_css_str()** : Add a css string asset to the layout
+* **add_css_php()** : Add a css php asset to the layout
 * **add_js_uri()** : Add a javascript uri asset to the layout
 * **add_js_str()** : Add a javascript string asset to the layout
+* **add_js_php()** : Add a javascript php asset to the layout
 * **add_basic_css()** : Add the basic css assets according to the given tags or all the basic css assets
 * **add_basic_js()** : Add the basic javascript assets according to the given tags or all the basic javascript assets
 * **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets
@@ -91,13 +93,15 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 * **add_basic_js_except()** : Add the basic javascript assets except those that have a tag in common with the given tags
 * **add_basic_assets_except()** : Add the basic css and javascript assets except those that have a tag in common with the given tags
 
-Note: The basic assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file config_layout.php
+Note: The basic assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file config_layout.php  
+Note: If a basic asset is a string, it is considered as a local uri asset with no attributes and no tags.
 
 Example:
 
     $config['layout_basic_css'] = array(
         'css/app.css',
         array(
+            'type'        => 'uri',
             'uri'         => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
             'location'    => 'remote',
             'attributes'  => array(
@@ -109,12 +113,25 @@ Example:
     $config['layout_basic_js'] = array(
         'js/app.js',
         array(
+            'type'        => 'uri',
             'uri'         => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
             'location'    => 'remote',
             'attributes'  => array(
                 'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',
                 'crossorigin'  => 'anonymous',
             ),
+        ),
+        array(
+            'type'     => 'str',
+            'content'  => '/* some javascript code */',
+        ),
+        array(
+            'type'      => 'php',
+            'callback'  => 'my_function',
+        ),
+        array(
+            'type'      => 'php',
+            'callback'  => ['My_class', 'my_method'],
         ),
     );
 
