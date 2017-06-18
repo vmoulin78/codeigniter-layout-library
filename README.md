@@ -83,9 +83,13 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 * **add_css_uri()** : Add a css uri asset to the layout
 * **add_css_str()** : Add a css string asset to the layout
 * **add_css_php()** : Add a css php asset to the layout
-* **add_js_uri()** : Add a javascript uri asset to the layout
-* **add_js_str()** : Add a javascript string asset to the layout
-* **add_js_php()** : Add a javascript php asset to the layout
+* **add_js_uri()** : Add a javascript uri asset to the layout  
+Example: $CI->layout->add_js_uri('js/app.js');
+* **add_js_str()** : Add a javascript string asset to the layout  
+Example: $CI->layout->add_js_str("var base_url = '" . $CI->config->item('base_url') . "';");
+* **add_js_php()** : Add a javascript php asset to the layout  
+Example: $CI->layout->add_js_php(['My_class', 'my_method']);  
+My_class::my_method() is a php function which returns some javascript code.
 * **add_basic_css()** : Add the basic css assets according to the given tags or all the basic css assets
 * **add_basic_js()** : Add the basic javascript assets according to the given tags or all the basic javascript assets
 * **add_basic_assets()** : Add the basic css and javascript assets according to the given tags or all the basic css and javascript assets
