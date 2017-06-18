@@ -97,8 +97,12 @@ Example: `$CI->layout->add_js_php(['My_class', 'my_method']);`
 * **add_basic_js_except()** : Add the basic javascript assets except those that have a tag in common with the given tags
 * **add_basic_assets_except()** : Add the basic css and javascript assets except those that have a tag in common with the given tags
 
-Note: The basic assets are defined in the variables $config['layout_basic_css'] and $config['layout_basic_js'] of the configuration file config_layout.php  
+Note: The basic assets are defined in the variables `$config['layout_basic_css']` and `$config['layout_basic_js']` of the configuration file `config_layout.php`.
+
 Note: If a basic asset is a string, it is considered as a local uri asset with no attributes and no tags.
+
+Note: Tags are useful if you want to put some javascript at one place (for example in the head section) and some other javascript at another place (for example in the bottom of the page).  
+All tags must be declared in the variables `$config['layout_css_tags']` and `$config['layout_js_tags']` of the configuration file `config_layout.php`.
 
 Example:
 
@@ -128,16 +132,20 @@ Example:
         array(
             'type'     => 'str',
             'content'  => '/* some javascript code */',
+            'tags'     => ['page_head'],
         ),
         array(
             'type'      => 'php',
             'callback'  => 'my_function',
+            'tags'      => ['page_bottom'],
         ),
         array(
             'type'      => 'php',
             'callback'  => ['My_class', 'my_method'],
         ),
     );
+    $config['layout_css_tags']  = [];
+    $config['layout_js_tags']   = ['page_head', 'page_bottom'];
 
 ### The triggers
 * **trigger_title()** : Trigger the insertion of the title of the page
