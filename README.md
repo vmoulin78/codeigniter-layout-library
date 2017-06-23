@@ -80,9 +80,13 @@ If you have an app.css or app.js file, you need to add it to the configuration f
 * **return_breadcrumb()** : Return the breadcrumb
 
 ### The "asset" section
-* **add_css_uri()** : Add a css uri asset to the layout
-* **add_css_str()** : Add a css string asset to the layout
-* **add_css_php()** : Add a css php asset to the layout
+* **add_css_uri()** : Add a css uri asset to the layout  
+Example: `$CI->layout->add_css_uri('css/app.css');`
+* **add_css_str()** : Add a css string asset to the layout  
+Example: `$CI->layout->add_css_str('/* some css code */');`
+* **add_css_php()** : Add a css php asset to the layout  
+Example: `$CI->layout->add_css_php('my_function');`  
+`my_function()` is a php function which returns some css code.
 * **add_js_uri()** : Add a javascript uri asset to the layout  
 Example: `$CI->layout->add_js_uri('js/app.js');`
 * **add_js_str()** : Add a javascript string asset to the layout  
@@ -148,6 +152,7 @@ Example:
     $config['layout_js_tags']   = ['page_head', 'page_bottom'];
 
 ### The triggers
+The triggers have to be used in the templates.
 * **trigger_title()** : Trigger the insertion of the title of the page
 * **trigger_charset()** : Trigger the insertion of the charset of the page
 * **trigger_metadata()** : Trigger the insertion of all the "name" metadata
