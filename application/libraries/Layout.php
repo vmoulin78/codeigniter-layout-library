@@ -1440,16 +1440,17 @@ class Layout
      * @return void
      */
     public function render_action_view($data = array()) {
+        $directory = $this->CI->router->fetch_directory();
         $controller = $this->CI->router->fetch_class();
         $action = $this->CI->router->fetch_method();
-        
-        $this->add_css_uri('css/controllers/' . $controller . '/controller.css', 'local', [], [], true);
-        $this->add_css_uri('css/controllers/' . $controller . '/actions/' . $action . '.css', 'local', [], [], true);
 
-        $this->add_js_uri('js/controllers/' . $controller . '/controller.js', 'local', [], [], true);
-        $this->add_js_uri('js/controllers/' . $controller . '/actions/' . $action . '.js', 'local', [], [], true);
+        $this->add_css_uri('css/controllers/' . $directory . $controller . '/controller.css', 'local', [], [], true);
+        $this->add_css_uri('css/controllers/' . $directory . $controller . '/actions/' . $action . '.css', 'local', [], [], true);
 
-        $this->render_view('controllers/' . $controller . '/actions/' . $action, $data);
+        $this->add_js_uri('js/controllers/' . $directory . $controller . '/controller.js', 'local', [], [], true);
+        $this->add_js_uri('js/controllers/' . $directory . $controller . '/actions/' . $action . '.js', 'local', [], [], true);
+
+        $this->render_view('controllers/' . $directory . $controller . '/actions/' . $action, $data);
     }
 
     /******************************************************************************/
