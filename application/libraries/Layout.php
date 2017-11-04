@@ -1424,7 +1424,7 @@ class Layout
 
         $output = $this->CI->load->view('../templates/' . $current_root_template . '/' . $current_root_template, array('CI' => $this->CI), true);
 
-        echo $output;
+        $this->CI->output->set_output($output);
     }
 
     /**
