@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
-* **Version** : 3.3.0
+* **Version** : 3.3.1
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php

@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     3.3.0
+ * @version     3.3.1
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ class Layout
     public function __construct() {
         $this->CI =& get_instance();
 
-        $this->content   = array('main' => '');
+        $this->content = array('main' => '');
         
         $this->set_template($this->CI->config->item('layout_default_template'));
         $this->set_title($this->CI->config->item('layout_default_title'));
@@ -1422,9 +1422,7 @@ class Layout
 
         $current_root_template = $this->get_current_root_template();
 
-        $output = $this->CI->load->view('../templates/' . $current_root_template . '/' . $current_root_template, array('CI' => $this->CI), true);
-
-        echo $output;
+        $this->CI->load->view('../templates/' . $current_root_template . '/' . $current_root_template, array('CI' => $this->CI));
     }
 
     /**
@@ -1440,9 +1438,9 @@ class Layout
      * @return void
      */
     public function render_action_view($data = array()) {
-        $directory = $this->CI->router->fetch_directory();
-        $controller = $this->CI->router->fetch_class();
-        $action = $this->CI->router->fetch_method();
+        $directory   = $this->CI->router->fetch_directory();
+        $controller  = $this->CI->router->fetch_class();
+        $action      = $this->CI->router->fetch_method();
 
         $this->add_css_uri('css/controllers/' . $directory . $controller . '/controller.css', 'local', [], [], true);
         $this->add_css_uri('css/controllers/' . $directory . $controller . '/actions/' . $action . '.css', 'local', [], [], true);
