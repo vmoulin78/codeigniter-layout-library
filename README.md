@@ -2,7 +2,11 @@
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017 Vincent MOULIN
 * **Version** : 3.3.1
-* **CodeIgniter Forum Thread** : <a href="https://forum.codeigniter.com/thread-68021.html" target="_blank">https://forum.codeigniter.com/thread-68021.html</a>
+* **CodeIgniter Forum Thread** :
+
+    ```text
+    <a href="https://forum.codeigniter.com/thread-68021.html" target="_blank">https://forum.codeigniter.com/thread-68021.html</a>
+    ```
 
 ## Installation
 1. Copy the file ./application/libraries/Layout.php
