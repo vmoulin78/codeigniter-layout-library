@@ -2,8 +2,8 @@
 /**
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
- * @license     MIT License Copyright (c) 2017 Vincent MOULIN
- * @version     3.3.1
+ * @license     MIT License Copyright (c) 2017-2018 Vincent MOULIN
+ * @version     3.4.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -504,7 +504,7 @@ class Layout
      *
      * @access public
      * @param $uri
-     * @param $location
+     * @param $location ['local'|'remote']
      * @param $attributes
      * @param $tags
      * @param $return_bool
@@ -645,12 +645,13 @@ class Layout
      *     array(
      *         'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',
      *         'crossorigin'  => 'anonymous',
+     *         'async'        => null,
      *     )
      * );
      *
      * @access public
      * @param $uri
-     * @param $location
+     * @param $location ['local'|'remote']
      * @param $attributes
      * @param $tags
      * @param $return_bool
@@ -942,25 +943,34 @@ class Layout
         switch ($css['type']) {
             case 'uri':
                 echo '<link rel="stylesheet" type="text/css" href="' . $css['absolute_href'] . '"';
-                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
-                echo ' />';
                 break;
             case 'str':
                 echo '<style type="text/css"';
-                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
+                break;
+            case 'php':
+                echo '<style type="text/css"';
+                break;
+            default:
+                break;
+        }
+
+        foreach ($css['attributes'] as $attribute_name => $attribute_value) {
+            echo ' ' . $attribute_name;
+            if ( ! is_null($attribute_value)) {
+                echo '="' . $attribute_value . '"';
+            }
+        }
+
+        switch ($css['type']) {
+            case 'uri':
+                echo ' />';
+                break;
+            case 'str':
                 echo '>';
                 echo $css['content'];
                 echo '</style>';
                 break;
             case 'php':
-                echo '<style type="text/css"';
-                foreach ($css['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
                 echo '>';
                 echo call_user_func_array($css['callback'], $css['args']);
                 echo '</style>';
@@ -981,25 +991,34 @@ class Layout
         switch ($js['type']) {
             case 'uri':
                 echo '<script type="text/javascript" src="' . $js['absolute_href'] . '"';
-                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
-                echo '></script>';
                 break;
             case 'str':
                 echo '<script type="text/javascript"';
-                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
+                break;
+            case 'php':
+                echo '<script type="text/javascript"';
+                break;
+            default:
+                break;
+        }
+
+        foreach ($js['attributes'] as $attribute_name => $attribute_value) {
+            echo ' ' . $attribute_name;
+            if ( ! is_null($attribute_value)) {
+                echo '="' . $attribute_value . '"';
+            }
+        }
+
+        switch ($js['type']) {
+            case 'uri':
+                echo '></script>';
+                break;
+            case 'str':
                 echo '>';
                 echo $js['content'];
                 echo '</script>';
                 break;
             case 'php':
-                echo '<script type="text/javascript"';
-                foreach ($js['attributes'] as $attribute_name => $attribute_value) {
-                    echo ' ' . $attribute_name . '="' . $attribute_value . '"';
-                }
                 echo '>';
                 echo call_user_func_array($js['callback'], $js['args']);
                 echo '</script>';
