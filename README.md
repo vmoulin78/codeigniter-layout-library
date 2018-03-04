@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017-2018 Vincent MOULIN
-* **Version** : 3.4.0
+* **Version** : 3.4.1
 * **CodeIgniter Forum Thread** : [https://forum.codeigniter.com/thread-68021.html](https://forum.codeigniter.com/thread-68021.html)
 
 ## Installation
@@ -132,7 +132,8 @@ Example:
             'attributes'  => array(
                 'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',
                 'crossorigin'  => 'anonymous',
-                'async'        => null,
+                'async'        => true,
+                'defer'        => false,
             ),
         ),
         array(

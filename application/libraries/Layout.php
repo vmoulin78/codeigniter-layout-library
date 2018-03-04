@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017-2018 Vincent MOULIN
- * @version     3.4.0
+ * @version     3.4.1
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -645,7 +645,8 @@ class Layout
      *     array(
      *         'integrity'    => 'sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa',
      *         'crossorigin'  => 'anonymous',
-     *         'async'        => null,
+     *         'async'        => true,
+     *         'defer'        => false,
      *     )
      * );
      *
@@ -955,8 +956,12 @@ class Layout
         }
 
         foreach ($css['attributes'] as $attribute_name => $attribute_value) {
+            if ($attribute_value === false) {
+                continue;
+            }
+
             echo ' ' . $attribute_name;
-            if ( ! is_null($attribute_value)) {
+            if ($attribute_value !== true) {
                 echo '="' . $attribute_value . '"';
             }
         }
@@ -1003,8 +1008,12 @@ class Layout
         }
 
         foreach ($js['attributes'] as $attribute_name => $attribute_value) {
+            if ($attribute_value === false) {
+                continue;
+            }
+
             echo ' ' . $attribute_name;
-            if ( ! is_null($attribute_value)) {
+            if ($attribute_value !== true) {
                 echo '="' . $attribute_value . '"';
             }
         }
