@@ -8,9 +8,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 | 'layout_web_folder' = The name of the web folder
 |
-| 'layout_default_template'  = The default template of the page
-| 'layout_default_title'     = The default title of the page
-| 'layout_default_charset'   = The default charset of the page
+| 'layout_default_template'         = The default template of the page
+| 'layout_default_title'            = The default title of the page
+| 'layout_default_charset'          = The default charset of the page
+| 'layout_default_content_section'  = The default content section of the page
 |
 | 'layout_basic_css'  = The basic css assets
 | 'layout_basic_js'   = The basic javascript assets
@@ -27,9 +28,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $config['layout_web_folder'] = 'web';
 
-$config['layout_default_template']  = 'main_template';
-$config['layout_default_title']     = 'The default title';
-$config['layout_default_charset']   = $this->item('charset');
+$config['layout_default_template']         = 'main_template';
+$config['layout_default_title']            = 'The default title';
+$config['layout_default_charset']          = $this->item('charset');
+$config['layout_default_content_section']  = 'main';
 
 $config['layout_basic_css']  = array();
 $config['layout_basic_js']   = array();

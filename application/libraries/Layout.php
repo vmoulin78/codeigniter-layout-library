@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017-2018 Vincent MOULIN
- * @version     3.4.1
+ * @version     3.5.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,8 @@ class Layout
     public function __construct() {
         $this->CI =& get_instance();
 
-        $this->content = array('main' => '');
+        $default_content_section = $this->CI->config->item('layout_default_content_section');
+        $this->content = array($default_content_section => '');
         
         $this->set_template($this->CI->config->item('layout_default_template'));
         $this->set_title($this->CI->config->item('layout_default_title'));
@@ -1416,7 +1417,11 @@ class Layout
      * @param $autoloaded_assets An array defining the assets which have to be autoloaded (this array may only accept the values: 'css', 'js')
      * @return $this
      */
-    public function load_view($view, $data = array(), $content_section = 'main', $autoloaded_assets = array()) {
+    public function load_view($view, $data = array(), $content_section = null, $autoloaded_assets = array()) {
+        if (is_null($content_section)) {
+            $content_section = $this->CI->config->item('layout_default_content_section');
+        }
+
         $this->process_view($view, $data, $autoloaded_assets, false, $content_section);
         return $this;
     }
@@ -1444,7 +1449,7 @@ class Layout
      * @return void
      */
     public function render_view($view, $data = array(), $autoloaded_assets = array()) {
-        $this->load_view($view, $data, 'main', $autoloaded_assets);
+        $this->load_view($view, $data, $this->CI->config->item('layout_default_content_section'), $autoloaded_assets);
 
         $this->push_templates_chain($this->template);
 

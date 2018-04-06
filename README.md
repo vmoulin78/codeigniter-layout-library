@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017-2018 Vincent MOULIN
-* **Version** : 3.4.1
+* **Version** : 3.5.0
 * **CodeIgniter Forum Thread** : [https://forum.codeigniter.com/thread-68021.html](https://forum.codeigniter.com/thread-68021.html)
 
 ## Installation
