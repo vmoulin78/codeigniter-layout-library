@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
-* **License** : MIT License Copyright (c) 2017-2018 Vincent MOULIN
-* **Version** : 3.5.0
+* **License** : MIT License Copyright (c) 2017-2019 Vincent MOULIN
+* **Version** : 4.0.0
 * **CodeIgniter Forum Thread** : [https://forum.codeigniter.com/thread-68021.html](https://forum.codeigniter.com/thread-68021.html)
 
 ## Installation
@@ -44,14 +44,6 @@
             └── app.js
     ```
 Note: Create the css and javascript files only if needed !  
-If you have an app.css or app.js file, you need to add it to the configuration file config_layout.php:
-
-    $config['layout_basic_css'] = array(
-        'css/app.css',
-    );
-    $config['layout_basic_js'] = array(
-        'js/app.js',
-    );
 
 ## Description
 ### The getters
@@ -178,12 +170,14 @@ Note:
 * For more details, see the examples in the `./application/templates` folder.
 
 ### The "view" section
-* **render_action_view()** : Render a view with the defined template  
+* **render_action_view()** : Render an action view with the defined template  
 The rendered view corresponds to the controller action where this method is called.  
-The css and javascript files corresponding to the action and those corresponding to the controller that contains this action are automatically added (provided that the structure of the Layout web folder is compliant with the requirements).  
+The application, controller and action css/javascript files are automatically added (provided that the structure of the Layout web folder is compliant with the requirements).  
 Note: This is the method that you will probably use most of the time.
+* **render_virtual_action_view()** : Render a virtual action view with the defined template  
+The application, controller and virtual action css/javascript files are automatically added (provided that the structure of the Layout web folder is compliant with the requirements).  
+See the example: [./application/controllers/Welcome.php](https://github.com/vmoulin78/codeigniter-layout-library/blob/master/application/controllers/Welcome.php)
 * **render_view()** : Render a view with the defined template  
-Note: This is the method that you will use if the name of the action does not match the name of the view.
 * **load_view()** : Load a view output in a content section  
 Example:
    * in the controller: `$this->layout->load_view('widget_view', $data_for_widget_view, 'widget_section');`

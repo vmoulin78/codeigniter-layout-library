@@ -21,4 +21,27 @@ class Welcome extends CI_Controller
                      ->add_basic_assets()
                      ->render_action_view($data);
     }
+
+    /**
+     * Example for the virtual action view
+     * The virtual action is : create_update
+     * The create and update view are very similar, so following the DRY concept, we have only one common view create_update.php
+     */
+    public function create() {
+        $data = array(
+            // some data
+        );
+
+        $this->layout->add_basic_assets()
+                     ->render_virtual_action_view('create_update', $data);
+    }
+
+    public function update() {
+        $data = array(
+            // some data
+        );
+
+        $this->layout->add_basic_assets()
+                     ->render_virtual_action_view('create_update', $data);
+    }
 }

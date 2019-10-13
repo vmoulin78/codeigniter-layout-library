@@ -2,8 +2,8 @@
 /**
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
- * @license     MIT License Copyright (c) 2017-2018 Vincent MOULIN
- * @version     3.5.0
+ * @license     MIT License Copyright (c) 2017-2019 Vincent MOULIN
+ * @version     4.0.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1459,29 +1459,44 @@ class Layout
     }
 
     /**
+     * Render the view corresponding to the controller virtual action with the defined template
+     * The application, controller and virtual action css/javascript files are automatically added (provided that the structure of the Layout web folder is compliant with the requirements)
+     *
+     * @access public
+     * @param $virtual_action The name of the virtual action
+     * @param $data An associative array of data used in the rendered view
+     * @return void
+     */
+    public function render_virtual_action_view($virtual_action, $data = array()) {
+        $directory   = $this->CI->router->fetch_directory();
+        $controller  = $this->CI->router->fetch_class();
+
+        $this->add_css_uri('css/app.css', 'local', [], [], true);
+        $this->add_css_uri('css/controllers/' . $directory . $controller . '/controller.css', 'local', [], [], true);
+        $this->add_css_uri('css/controllers/' . $directory . $controller . '/actions/' . $virtual_action . '.css', 'local', [], [], true);
+
+        $this->add_js_uri('js/app.js', 'local', [], [], true);
+        $this->add_js_uri('js/controllers/' . $directory . $controller . '/controller.js', 'local', [], [], true);
+        $this->add_js_uri('js/controllers/' . $directory . $controller . '/actions/' . $virtual_action . '.js', 'local', [], [], true);
+
+        $this->render_view('controllers/' . $directory . $controller . '/actions/' . $virtual_action, $data);
+    }
+
+    /**
      * Note: This method should be called only in a controller action and if:
      *           - the name of this action matches the name of the view
      *           - the structure of the folder ./application/views is compliant with the requirements
      * Render the view corresponding to the controller action with the defined template
-     * The css and javascript files corresponding to the action and those corresponding to the controller that contains this action
-     * are automatically added (provided that the structure of the Layout web folder is compliant with the requirements)
+     * The application, controller and action css/javascript files are automatically added (provided that the structure of the Layout web folder is compliant with the requirements)
      *
      * @access public
      * @param $data An associative array of data used in the rendered view
      * @return void
      */
     public function render_action_view($data = array()) {
-        $directory   = $this->CI->router->fetch_directory();
-        $controller  = $this->CI->router->fetch_class();
-        $action      = $this->CI->router->fetch_method();
+        $action = $this->CI->router->fetch_method();
 
-        $this->add_css_uri('css/controllers/' . $directory . $controller . '/controller.css', 'local', [], [], true);
-        $this->add_css_uri('css/controllers/' . $directory . $controller . '/actions/' . $action . '.css', 'local', [], [], true);
-
-        $this->add_js_uri('js/controllers/' . $directory . $controller . '/controller.js', 'local', [], [], true);
-        $this->add_js_uri('js/controllers/' . $directory . $controller . '/actions/' . $action . '.js', 'local', [], [], true);
-
-        $this->render_view('controllers/' . $directory . $controller . '/actions/' . $action, $data);
+        $this->render_virtual_action_view($action, $data);
     }
 
     /******************************************************************************/
