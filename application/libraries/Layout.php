@@ -3,7 +3,7 @@
  * @name        CodeIgniter Layout Library
  * @author      Vincent MOULIN
  * @license     MIT License Copyright (c) 2017-2019 Vincent MOULIN
- * @version     4.0.0
+ * @version     4.1.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ class Layout
     private $metadata = array();
     private $http_equiv = array();
     private $breadcrumb = array();
-    private $content;
+    private $sections;
     private $css = array();
     private $js = array();
     private $templates_chains_stack = array();
@@ -51,8 +51,8 @@ class Layout
     public function __construct() {
         $this->CI =& get_instance();
 
-        $default_content_section = $this->CI->config->item('layout_default_content_section');
-        $this->content = array($default_content_section => '');
+        $default_section = $this->CI->config->item('layout_default_section');
+        $this->sections = array($default_section => '');
         
         $this->set_template($this->CI->config->item('layout_default_template'));
         $this->set_title($this->CI->config->item('layout_default_title'));
@@ -91,12 +91,12 @@ class Layout
         return $this->breadcrumb;
     }
 
-    public function get_content() {
-        return $this->content;
+    public function get_sections() {
+        return $this->sections;
     }
 
-    public function get_content_section($content_section) {
-        return $this->content[$content_section];
+    public function get_section($section) {
+        return $this->sections[$section];
     }
 
     public function get_css() {
@@ -1093,14 +1093,14 @@ class Layout
     }
 
     /**
-     * Trigger the insertion of the content section $content_section
+     * Trigger the insertion of the section $section
      *
      * @access public
-     * @param $content_section
+     * @param $section
      * @return void
      */
-    public function trigger_content_section($content_section) {
-        echo $this->content[$content_section];
+    public function trigger_section($section) {
+        echo $this->sections[$section];
     }
 
     /**
@@ -1374,11 +1374,11 @@ class Layout
      * @param $autoloaded_assets An array defining the assets which have to be autoloaded (this array may only accept the values: 'css', 'js')
      * @param $is_returned
      *        if true, the output of the view $view is returned
-     *        if false, the output of the view $view is loaded in the content section $content_section
-     * @param $content_section
+     *        if false, the output of the view $view is loaded in the section $section
+     * @param $section
      * @return The output of the view $view if $is_returned is true and void otherwise
      */
-    private function process_view($view, $data, $autoloaded_assets, $is_returned = true, $content_section = null) {
+    private function process_view($view, $data, $autoloaded_assets, $is_returned = true, $section = null) {
         if (( ! is_string($view))
             || empty($view)
         ) {
@@ -1400,29 +1400,29 @@ class Layout
         if ($is_returned) {
             return $this->CI->load->view($view, $data, true);
         } else {
-            if ( ! isset($this->content[$content_section])) {
-                $this->content[$content_section] = '';
+            if ( ! isset($this->sections[$section])) {
+                $this->sections[$section] = '';
             }
-            $this->content[$content_section] .= $this->CI->load->view($view, $data, true);
+            $this->sections[$section] .= $this->CI->load->view($view, $data, true);
         }
     }
 
     /**
-     * Load the output of the view $view in the content section $content_section
+     * Load the output of the view $view in the section $section
      *
      * @access public
      * @param $view
      * @param $data An associative array of data used in the view $view
-     * @param $content_section
+     * @param $section
      * @param $autoloaded_assets An array defining the assets which have to be autoloaded (this array may only accept the values: 'css', 'js')
      * @return $this
      */
-    public function load_view($view, $data = array(), $content_section = null, $autoloaded_assets = array()) {
-        if (is_null($content_section)) {
-            $content_section = $this->CI->config->item('layout_default_content_section');
+    public function load_view($view, $data = array(), $section = null, $autoloaded_assets = array()) {
+        if (is_null($section)) {
+            $section = $this->CI->config->item('layout_default_section');
         }
 
-        $this->process_view($view, $data, $autoloaded_assets, false, $content_section);
+        $this->process_view($view, $data, $autoloaded_assets, false, $section);
         return $this;
     }
 
@@ -1449,7 +1449,7 @@ class Layout
      * @return void
      */
     public function render_view($view, $data = array(), $autoloaded_assets = array()) {
-        $this->load_view($view, $data, $this->CI->config->item('layout_default_content_section'), $autoloaded_assets);
+        $this->load_view($view, $data, $this->CI->config->item('layout_default_section'), $autoloaded_assets);
 
         $this->push_templates_chain($this->template);
 

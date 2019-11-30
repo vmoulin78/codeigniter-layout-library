@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             <hr />
 
             <section>
-                <?php $CI->layout->trigger_content_section('main'); ?>
+                <?php $CI->layout->trigger_section('main'); ?>
             </section>
 
             <hr />

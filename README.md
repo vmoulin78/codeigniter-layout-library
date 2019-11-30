@@ -1,7 +1,7 @@
 # CodeIgniter Layout Library
 * **Author** : Vincent MOULIN
 * **License** : MIT License Copyright (c) 2017-2019 Vincent MOULIN
-* **Version** : 4.0.0
+* **Version** : 4.1.0
 * **CodeIgniter Forum Thread** : [https://forum.codeigniter.com/thread-68021.html](https://forum.codeigniter.com/thread-68021.html)
 
 ## Installation
@@ -53,8 +53,8 @@ Note: Create the css and javascript files only if needed !
 * **get_metadata()**
 * **get_http_equiv()**
 * **get_breadcrumb()**
-* **get_content()**
-* **get_content_section()**
+* **get_sections()**
+* **get_section()**
 * **get_css()**
 * **get_js()**
 
@@ -153,7 +153,7 @@ The triggers have to be used in the templates.
 * **trigger_metadata()** : Trigger the insertion of all the "name" metadata
 * **trigger_http_equiv()** : Trigger the insertion of all the "http-equiv" metadata
 * **trigger_breadcrumb()** : Trigger the insertion of the breadcrumb
-* **trigger_content_section()** : Trigger the insertion of a content section
+* **trigger_section()** : Trigger the insertion of a section
 * **trigger_css()** : Trigger the insertion of the css assets according to the given tags or all the css assets
 * **trigger_js()** : Trigger the insertion of the javascript assets according to the given tags or all the javascript assets
 * **trigger_css_except()** : Trigger the insertion of the css assets except those that have a tag in common with the given tags
@@ -178,8 +178,8 @@ Note: This is the method that you will probably use most of the time.
 The application, controller and virtual action css/javascript files are automatically added (provided that the structure of the Layout web folder is compliant with the requirements).  
 See the example: [./application/controllers/Welcome.php](https://github.com/vmoulin78/codeigniter-layout-library/blob/master/application/controllers/Welcome.php)
 * **render_view()** : Render a view with the defined template  
-* **load_view()** : Load a view output in a content section  
+* **load_view()** : Load a view output in a section  
 Example:
    * in the controller: `$this->layout->load_view('widget_view', $data_for_widget_view, 'widget_section');`
-   * in the template, you put `<?php $CI->layout->trigger_content_section('widget_section'); ?>` where you want to insert the loaded view "widget_view".
+   * in the template, you put `<?php $CI->layout->trigger_section('widget_section'); ?>` where you want to insert the loaded view "widget_view".
 * **return_view()** : Return a view output
